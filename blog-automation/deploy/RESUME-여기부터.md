@@ -10,12 +10,14 @@
 - [x] Lightsail 인스턴스 생성 — **`Ubuntu-1`**, Ubuntu 22.04, **Seoul 리전**, $5 플랜
 - [x] 고정 IP 붙임 → **`54.116.224.29`** ← 이게 내 서버 주소
 - [x] SSH 접속용 계정: 사용자명 **`ubuntu`** (접속은 Lightsail "Connect using SSH" 브라우저 버튼)
+- [x] 도메인 **clearskysogood.net** 구매 (Cloudflare)
+- [x] DNS A레코드 연결: `@`, `www` → `54.116.224.29`, **DNS only(회색 구름)** 설정 완료
 
 > 💰 현재 비용: 서버 월 $5 (첫 몇 개월 무료 크레딧 있을 수 있음). 그 외 과금 없음.
 
 ---
 
-## ⏳ 남은 3단계 (노트북 큰 화면에서, 약 15분)
+## ⏳ 남은 2단계 (노트북 큰 화면에서, 약 5분) — 도메인/DNS는 이미 끝!
 
 ### 1️⃣ 방화벽 443 포트 열기 (5초)
 Lightsail → **`Ubuntu-1`** 클릭 → **Networking** 탭 → **IPv4 Firewall** →
