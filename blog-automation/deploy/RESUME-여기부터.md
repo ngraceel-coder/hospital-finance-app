@@ -23,20 +23,20 @@ Lightsail → **`Ubuntu-1`** 클릭 → **Networking** 탭 → **IPv4 Firewall**
 - (노트북에선 Create 버튼이 바로 보임. 폰처럼 안 잘림)
 - Source IP는 손대지 말 것 = 기본 "모두 허용"
 
-### 2️⃣ 도메인 사고 연결
-- 가비아(gabia.com) 등에서 도메인 구매 (연 1~2만원)
-- DNS 관리에서 **A 레코드** 설정:
-  - `@`  →  `54.116.224.29`
+### 2️⃣ 도메인 연결 (도메인: clearskysogood.net ✅ 구매완료)
+- 도메인 산 사이트(OVH/Cloudflare 등)의 **DNS 관리**에서 **A 레코드** 설정:
+  - `@`  (또는 clearskysogood.net)  →  `54.116.224.29`
   - `www`  →  `54.116.224.29`
 - (전파 5분~1시간)
+- ⚠️ Cloudflare에서 샀다면 A레코드 구름 아이콘을 **회색(DNS only)** 으로! (주황이면 Caddy SSL 충돌)
 
 ### 3️⃣ 서버 접속해서 한 줄 실행 → 블로그 완성
-Lightsail → `Ubuntu-1` → **"Connect using SSH"**(브라우저 터미널) → 붙여넣기:
+Lightsail → `Ubuntu-1` → **"Connect using SSH"**(브라우저 터미널) → 아래를 그대로 붙여넣기:
 ```bash
-DOMAIN=내도메인.com ADMIN_EMAIL=내이메일@gmail.com \
+DOMAIN=clearskysogood.net ADMIN_EMAIL=ngraceel@gmail.com \
   bash <(curl -fsSL https://raw.githubusercontent.com/ngraceel-coder/hospital-finance-app/claude/blog-monetization-automation-84dfup/blog-automation/deploy/bootstrap-vps.sh)
 ```
-→ 1~2분 뒤 **https://내도메인.com** 에 워드프레스 블로그 완성 + 앱 비밀번호 출력
+→ 1~2분 뒤 **https://clearskysogood.net** 에 워드프레스 블로그 완성 + 앱 비밀번호 출력
 
 ### 4️⃣ (그다음) 자동화 가동
 ```bash
@@ -53,7 +53,7 @@ python3 run.py run       # 첫 자동 발행
 ## 내 정보 메모칸 (채워두면 편함)
 
 - 서버 고정 IP: `54.116.224.29`
-- 도메인: `________________` (구매 후 기입)
+- 도메인: `clearskysogood.net` ✅
 - 워드프레스 관리자 비번: `________________` (bootstrap 실행 시 출력됨)
 - 앱 비밀번호(WP_APP_PASSWORD): `________________` (bootstrap 실행 시 출력됨)
 
