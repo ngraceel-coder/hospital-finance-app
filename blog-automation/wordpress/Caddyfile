@@ -1,0 +1,18 @@
+# Caddy 자동 HTTPS 리버스프록시
+# {$DOMAIN} 은 컨테이너 환경변수에서 주입됨.
+# Caddy가 Let's Encrypt로 SSL 인증서를 자동 발급/갱신한다.
+{$DOMAIN} {
+    reverse_proxy wordpress:80
+    encode gzip
+
+    # 정적 리소스 캐시
+    @static {
+        path *.css *.js *.jpg *.jpeg *.png *.gif *.webp *.svg *.woff *.woff2
+    }
+    header @static Cache-Control "public, max-age=2592000"
+}
+
+# www 로 들어오면 non-www 로 정리 (선택)
+www.{$DOMAIN} {
+    redir https://{$DOMAIN}{uri} permanent
+}

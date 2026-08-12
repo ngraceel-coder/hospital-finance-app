@@ -1,0 +1,90 @@
+# ============================================================
+#  프로덕션 배포 - 도메인 + 자동 HTTPS(Caddy) 포함
+#
+#  로컬용(docker-compose.yml)과 달리:
+#   - Caddy가 80/443 을 받아 자동으로 무료 SSL 인증서 발급/갱신
+#   - 워드프레스는 외부에 직접 노출되지 않고 Caddy 뒤에 있음
+#   - 리버스프록시 뒤 HTTPS 인식 설정 포함
+#
+#  사용:  DOMAIN 등은 .env 에서 읽음. deploy/bootstrap-vps.sh 가 자동 실행.
+#    docker compose -f docker-compose.prod.yml up -d
+# ============================================================
+services:
+  db:
+    image: mariadb:11
+    restart: always
+    environment:
+      MARIADB_DATABASE: ${WP_DB_NAME:-wordpress}
+      MARIADB_USER: ${WP_DB_USER:-wpuser}
+      MARIADB_PASSWORD: ${WP_DB_PASSWORD:?set in .env}
+      MARIADB_ROOT_PASSWORD: ${WP_DB_ROOT_PASSWORD:?set in .env}
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  wordpress:
+    image: wordpress:6-php8.3-apache
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    expose:
+      - "80"                      # 호스트에 직접 노출 안 함 (Caddy가 프록시)
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: ${WP_DB_NAME:-wordpress}
+      WORDPRESS_DB_USER: ${WP_DB_USER:-wpuser}
+      WORDPRESS_DB_PASSWORD: ${WP_DB_PASSWORD:?set in .env}
+      # 리버스프록시 뒤에서 HTTPS 를 올바로 인식 (무한 리다이렉트 방지)
+      WORDPRESS_CONFIG_EXTRA: |
+        if (isset($$_SERVER['HTTP_X_FORWARDED_PROTO']) && $$_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
+            $$_SERVER['HTTPS'] = 'on';
+        }
+        define('WP_HOME', 'https://${DOMAIN}');
+        define('WP_SITEURL', 'https://${DOMAIN}');
+    volumes:
+      - wp_data:/var/www/html
+
+  wpcli:
+    image: wordpress:cli-php8.3
+    depends_on:
+      - wordpress
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: ${WP_DB_NAME:-wordpress}
+      WORDPRESS_DB_USER: ${WP_DB_USER:-wpuser}
+      WORDPRESS_DB_PASSWORD: ${WP_DB_PASSWORD:?set in .env}
+      WP_URL: https://${DOMAIN}
+      WP_TITLE: ${WP_TITLE:-내 수익형 블로그}
+      WP_ADMIN_USER: ${WP_ADMIN_USER:-admin}
+      WP_ADMIN_PASSWORD: ${WP_ADMIN_PASSWORD:?set in .env}
+      WP_ADMIN_EMAIL: ${WP_ADMIN_EMAIL:?set in .env}
+    volumes:
+      - wp_data:/var/www/html
+      - ./setup.sh:/setup.sh:ro
+    entrypoint: ["/bin/sh", "/setup.sh"]
+
+  caddy:
+    image: caddy:2
+    restart: always
+    depends_on:
+      - wordpress
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN:?set in .env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  db_data:
+  wp_data:
+  caddy_data:
+  caddy_config:
