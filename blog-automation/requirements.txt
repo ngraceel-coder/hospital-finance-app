@@ -1,0 +1,8 @@
+# 블로그 수익화 자동화 툴킷 의존성
+anthropic>=0.40.0        # Claude API (콘텐츠 생성)
+requests>=2.31.0         # 네이버 검색광고 API / 워드프레스 REST API 호출
+python-dotenv>=1.0.0     # .env 환경변수 로딩
+python-slugify>=8.0.0    # URL 슬러그 생성
+Pillow>=10.0.0           # 썸네일 이미지 생성(선택)
+schedule>=1.2.0          # 간단한 스케줄러(선택, cron 대체)
+tenacity>=8.2.0          # API 재시도(백오프)
