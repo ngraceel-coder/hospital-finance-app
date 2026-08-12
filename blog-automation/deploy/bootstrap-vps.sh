@@ -2,23 +2,18 @@
 # ============================================================
 #  VPS 원클릭 부트스트랩 (Ubuntu 22.04+ / Debian)
 #
-#  새로 만든 서버에 root 로 접속해서 이것 하나만 실행하면:
-#   - 도커 설치
-#   - 이 저장소 clone
-#   - 강력한 비밀번호 자동 생성
-#   - 워드프레스 + 자동 HTTPS(Caddy) 기동
-#   - 자동발행용 앱 비밀번호 출력
+#  Lightsail 브라우저 SSH는 'ubuntu' 사용자로 접속하므로
+#  권한이 필요한 작업은 sudo 로 실행하고, 설치는 홈 폴더(~/blog)에 한다.
 #
-#  실행 예:
-#    DOMAIN=myblog.com ADMIN_EMAIL=you@gmail.com bash bootstrap-vps.sh
-#
-#  (DOMAIN/ADMIN_EMAIL 안 주면 물어봄)
+#  실행 예 (Lightsail "Connect using SSH" 브라우저 터미널에 붙여넣기):
+#    DOMAIN=myblog.com ADMIN_EMAIL=you@gmail.com bash <(curl -fsSL <이 파일 raw URL>)
 # ============================================================
 set -e
 
 REPO_URL="${REPO_URL:-https://github.com/ngraceel-coder/hospital-finance-app.git}"
 BRANCH="${BRANCH:-claude/blog-monetization-automation-84dfup}"
-INSTALL_DIR="${INSTALL_DIR:-/opt/blog}"
+# 홈 폴더에 설치 → 권한 문제 없음
+INSTALL_DIR="${INSTALL_DIR:-$HOME/blog}"
 
 # ---- 입력 확인 ----
 if [ -z "$DOMAIN" ]; then
@@ -31,20 +26,26 @@ if [ -z "$DOMAIN" ] || [ -z "$ADMIN_EMAIL" ]; then
   echo "❌ DOMAIN 과 ADMIN_EMAIL 은 필수입니다."; exit 1
 fi
 
-echo "▶ 도메인: $DOMAIN / 이메일: $ADMIN_EMAIL"
+echo "▶ 도메인: $DOMAIN / 이메일: $ADMIN_EMAIL / 설치경로: $INSTALL_DIR"
 
 # ---- 1. 필수 패키지 + 도커 ----
+if ! command -v git >/dev/null 2>&1; then
+  echo "📦 git 설치..."
+  sudo apt-get update -y && sudo apt-get install -y git
+fi
 if ! command -v docker >/dev/null 2>&1; then
-  echo "📦 도커 설치 중..."
+  echo "📦 도커 설치 중... (get.docker.com 스크립트가 sudo 자동 사용)"
   curl -fsSL https://get.docker.com | sh
 fi
-if ! command -v git >/dev/null 2>&1; then
-  apt-get update -y && apt-get install -y git
-fi
+# 현재 사용자를 docker 그룹에 (다음 로그인부터 sudo 없이 가능). 지금은 sudo docker 사용.
+sudo usermod -aG docker "$USER" 2>/dev/null || true
 
-# ---- 2. 저장소 clone ----
+# docker compose 는 sudo 로 호출 (그룹 적용은 재로그인 후라서)
+DC="sudo docker compose"
+
+# ---- 2. 저장소 clone (홈 폴더, 권한 OK) ----
 if [ ! -d "$INSTALL_DIR/.git" ]; then
-  echo "⬇️  저장소 clone..."
+  echo "⬇️  저장소 clone → $INSTALL_DIR"
   git clone --branch "$BRANCH" "$REPO_URL" "$INSTALL_DIR"
 else
   echo "🔄 저장소 업데이트..."
@@ -69,17 +70,17 @@ WP_DB_USER=wpuser
 WP_DB_PASSWORD=$(rand)
 WP_DB_ROOT_PASSWORD=$(rand)
 EOF
-  echo "   관리자 비밀번호: $ADMIN_PW   (안전한 곳에 보관!)"
+  echo "   👉 관리자 비밀번호: $ADMIN_PW   (지금 메모하세요!)"
 fi
 
 # ---- 4. 기동 ----
 echo "🚀 워드프레스 + HTTPS 기동... (SSL 발급까지 1~2분)"
-docker compose -f docker-compose.prod.yml up -d
+$DC -f docker-compose.prod.yml up -d
 
 # ---- 5. 세팅 완료 대기 & 앱 비밀번호 ----
 echo "⏳ 자동 세팅 대기..."
 for i in $(seq 1 60); do
-  if docker compose -f docker-compose.prod.yml logs wpcli 2>/dev/null | grep -q "세팅 완료"; then
+  if $DC -f docker-compose.prod.yml logs wpcli 2>/dev/null | grep -q "세팅 완료"; then
     break
   fi
   sleep 3
@@ -87,7 +88,7 @@ done
 
 echo ""
 echo "================= 결과 ================="
-docker compose -f docker-compose.prod.yml logs wpcli 2>/dev/null | tail -18
+$DC -f docker-compose.prod.yml logs wpcli 2>/dev/null | tail -20
 echo "========================================"
 echo ""
 echo "✅ 배포 완료!"

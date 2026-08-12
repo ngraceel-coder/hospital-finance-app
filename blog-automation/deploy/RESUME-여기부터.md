@@ -42,7 +42,7 @@ DOMAIN=clearskysogood.net ADMIN_EMAIL=ngraceel@gmail.com \
 
 ### 4️⃣ (그다음) 자동화 가동
 ```bash
-cd /opt/blog/blog-automation
+cd ~/blog/blog-automation
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env    # ANTHROPIC_API_KEY, WP_APP_PASSWORD 입력
