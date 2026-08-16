@@ -72,21 +72,49 @@ def generate_article(title: str, primary_keyword: str, niche: str = "",
 아래 JSON으로만 출력:
 {{
   "title": "최종 제목",
+  "slug": "short-english-slug (영문 소문자 3~6단어, 하이픈 구분, 핵심키워드 번역 포함)",
   "meta_description": "검색결과용 요약 (120자 내외, 키워드 포함)",
   "tags": ["태그1","태그2","태그3","태그4","태그5"],
   "category": "카테고리명",
+  "faq": [{{"q": "질문1", "a": "답변1"}}, {{"q": "질문2", "a": "답변2"}}, {{"q": "질문3", "a": "답변3"}}],
   "html": "본문 HTML (플레이스홀더 포함)"
 }}"""
 
     data = llm.ask_json(prompt, system=CONTENT_SYSTEM, max_tokens=16000)
     html = data.get("html", "")
+
+    # FAQ 구조화 데이터(JSON-LD) — 구글 리치 결과(질문 펼침) 노출용
+    faq = data.get("faq") or []
+    if faq:
+        import json as _json
+        faq_schema = {
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": [
+                {
+                    "@type": "Question",
+                    "name": item.get("q", ""),
+                    "acceptedAnswer": {"@type": "Answer", "text": item.get("a", "")},
+                }
+                for item in faq if item.get("q")
+            ],
+        }
+        html += (
+            '\n<script type="application/ld+json">'
+            + _json.dumps(faq_schema, ensure_ascii=False)
+            + "</script>"
+        )
+
+    # 슬러그: Claude가 지은 짧은 영문 슬러그 우선, 없으면 로마자화 폴백
+    ai_slug = slugify(data.get("slug", ""), allow_unicode=False)[:60]
     art = Article(
         title=data.get("title", title),
         html=html,
         meta_description=data.get("meta_description", ""),
         tags=data.get("tags", []),
         category=data.get("category", niche),
-        slug=slugify(data.get("title", title), allow_unicode=False)[:80]
+        slug=ai_slug
+        or slugify(data.get("title", title), allow_unicode=False)[:80]
         or slugify(primary_keyword),
         primary_keyword=primary_keyword,
         niche=niche,
