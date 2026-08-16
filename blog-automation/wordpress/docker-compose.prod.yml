@@ -66,6 +66,7 @@ services:
     volumes:
       - wp_data:/var/www/html
       - ./setup.sh:/setup.sh:ro
+      - ./design.css:/design.css:ro
     entrypoint: ["/bin/sh", "/setup.sh"]
 
   caddy:

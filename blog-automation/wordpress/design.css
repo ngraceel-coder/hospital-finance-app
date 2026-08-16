@@ -1,0 +1,125 @@
+/* ============================================
+   맑은 하늘 생활정보 — 브랜드 디자인
+   컨셉: 맑은 하늘 (스카이블루 + 화이트, 깨끗하고 신뢰감)
+   ============================================ */
+
+:root {
+  --sky: #2e86de;
+  --sky-dark: #0f4c81;
+  --sky-pale: #eaf3fc;
+  --ink: #12324f;
+}
+
+/* 전체 배경: 아주 옅은 하늘빛 */
+body {
+  background: #f6fafd;
+}
+
+/* 헤더: 하늘 그라데이션 */
+.main-header-bar,
+.ast-primary-header-bar {
+  background: linear-gradient(90deg, #0f4c81, #2e86de) !important;
+  border-bottom: none !important;
+}
+.site-title a,
+.site-title a:visited {
+  color: #ffffff !important;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+.site-description {
+  color: #cfe6ff !important;
+}
+.main-header-menu a,
+.ast-builder-menu .menu-item a {
+  color: #eaf3fc !important;
+}
+.main-header-menu a:hover {
+  color: #ffffff !important;
+}
+
+/* 링크/포인트 컬러 */
+a {
+  color: #1d6fd8;
+}
+a:hover {
+  color: var(--sky-dark);
+}
+
+/* 글 목록 카드 */
+.ast-article-post,
+.ast-article-single {
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(15, 76, 129, 0.07);
+  border: 1px solid #e3eef9;
+}
+.entry-title a {
+  color: var(--ink);
+  font-weight: 700;
+}
+.entry-title a:hover {
+  color: var(--sky);
+}
+
+/* 본문 소제목: 하늘색 포인트 바 */
+.entry-content h2 {
+  border-left: 5px solid var(--sky);
+  padding-left: 12px;
+  margin-top: 2.2em;
+  color: var(--ink);
+}
+.entry-content h3 {
+  color: #1a4e7e;
+  margin-top: 1.6em;
+}
+
+/* 표: 깔끔한 정보표 스타일 */
+.entry-content table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1.2em 0;
+  font-size: 0.95em;
+}
+.entry-content table th {
+  background: var(--sky-pale);
+  color: var(--ink);
+  font-weight: 700;
+}
+.entry-content table th,
+.entry-content table td {
+  border: 1px solid #d7e5f4;
+  padding: 10px 12px;
+  text-align: left;
+}
+.entry-content table tr:nth-child(even) td {
+  background: #f8fbfe;
+}
+
+/* 인용/강조 박스 */
+.entry-content blockquote {
+  background: var(--sky-pale);
+  border-left: 5px solid var(--sky);
+  border-radius: 0 10px 10px 0;
+  padding: 14px 18px;
+  font-style: normal;
+}
+
+/* 버튼 */
+.ast-button,
+button,
+input[type="submit"] {
+  background: var(--sky) !important;
+  border-radius: 10px !important;
+}
+.ast-button:hover {
+  background: var(--sky-dark) !important;
+}
+
+/* 모바일 가독성 */
+@media (max-width: 768px) {
+  .entry-content {
+    font-size: 1.02em;
+    line-height: 1.85;
+  }
+}
