@@ -78,7 +78,7 @@ def generate_article(title: str, primary_keyword: str, niche: str = "",
   "html": "본문 HTML (플레이스홀더 포함)"
 }}"""
 
-    data = llm.ask_json(prompt, system=CONTENT_SYSTEM, max_tokens=8000)
+    data = llm.ask_json(prompt, system=CONTENT_SYSTEM, max_tokens=16000)
     html = data.get("html", "")
     art = Article(
         title=data.get("title", title),

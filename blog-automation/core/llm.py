@@ -21,14 +21,16 @@ def _client():
     return anthropic.Anthropic(api_key=config.anthropic_api_key)
 
 
-def ask(prompt: str, system: str = "", max_tokens: int = 4096,
-        temperature: float = 0.7) -> str:
-    """Claude에게 프롬프트를 보내고 텍스트 응답을 반환."""
+def ask(prompt: str, system: str = "", max_tokens: int = 8192) -> str:
+    """Claude에게 프롬프트를 보내고 텍스트 응답을 반환.
+
+    참고: 최신 Claude 모델(sonnet-5/opus-5 등)은 temperature 등
+    샘플링 파라미터를 받지 않으므로 보내지 않는다 (보내면 400).
+    """
     client = _client()
     kwargs = dict(
         model=config.claude_model,
         max_tokens=max_tokens,
-        temperature=temperature,
         messages=[{"role": "user", "content": prompt}],
     )
     if system:
@@ -37,13 +39,13 @@ def ask(prompt: str, system: str = "", max_tokens: int = 4096,
     return "".join(block.text for block in resp.content if block.type == "text")
 
 
-def ask_json(prompt: str, system: str = "", max_tokens: int = 4096) -> dict | list:
+def ask_json(prompt: str, system: str = "", max_tokens: int = 8192) -> dict | list:
     """
     JSON 응답을 강제하고 파싱해서 반환.
     Claude가 코드블록으로 감싸는 경우도 처리.
     """
     system = (system + "\n\n반드시 유효한 JSON만 출력하세요. 설명 문장 금지.").strip()
-    raw = ask(prompt, system=system, max_tokens=max_tokens, temperature=0.4)
+    raw = ask(prompt, system=system, max_tokens=max_tokens)
     raw = raw.strip()
     # ```json ... ``` 제거
     if raw.startswith("```"):
