@@ -16,7 +16,7 @@ from pathlib import Path
 from config import config
 from core import topic_selector, content_generator, monetization, wordpress_publisher
 
-NICHES = ["정부지원금", "보험금융", "건강영양", "생활리뷰"]
+NICHES = ["정부지원금", "보험금융", "부동산정책", "건강영양", "생활리뷰"]
 HISTORY_FILE = config.output_dir / "published.json"
 
 
@@ -45,13 +45,14 @@ def select_topics(pick_niches: int = 3, use_naver: bool = True) -> dict:
     return result
 
 
-def produce_one(candidate: dict) -> content_generator.Article:
+def produce_one(candidate: dict, recent_posts: list = None) -> content_generator.Article:
     """3~4단계: 단일 후보 → 콘텐츠 생성 + 수익화 삽입."""
     art = content_generator.generate_article(
         title=candidate["title"],
         primary_keyword=candidate["primary_keyword"],
         niche=candidate["niche"],
         monetization=candidate.get("monetization", "adsense"),
+        recent_posts=recent_posts,
     )
     ok, problems = content_generator.quality_gate(art)
     if not ok:
@@ -88,7 +89,13 @@ def run_full_pipeline(posts_per_niche: int = 1, pick_niches: int = 3,
                 continue
             print(f"\n② [{niche}] 콘텐츠 생성: {cand['title']}")
             try:
-                art = produce_one(cand)
+                # 내부링크용: 실제 발행된 최근 글 목록 (성공 블로그 벤치마킹 반영)
+                recent = [
+                    {"title": h["title"], "link": h["result"]["link"]}
+                    for h in history[-15:]
+                    if isinstance(h.get("result"), dict) and h["result"].get("link")
+                ]
+                art = produce_one(cand, recent_posts=recent)
                 print(f"   글자수 {art.word_count} · 태그 {len(art.tags)}개")
                 # 대표이미지(카드형 썸네일) 자동 생성
                 thumb = None

@@ -67,11 +67,23 @@ def _plain_len(html: str) -> int:
 
 
 def generate_article(title: str, primary_keyword: str, niche: str = "",
-                     monetization: str = "adsense", min_chars: int = 1500) -> Article:
-    """단일 아티클 생성."""
+                     monetization: str = "adsense", min_chars: int = 1500,
+                     recent_posts: list = None) -> Article:
+    """단일 아티클 생성. recent_posts: [{'title','link'}] — 내부링크 삽입용."""
     today = datetime.date.today()
+    internal_block = ""
+    if recent_posts:
+        links = "\n".join(f"- {p['title']} → {p['link']}" for p in recent_posts[:8])
+        internal_block = f"""
+[내부링크 — SEO·체류시간 핵심]
+이 블로그의 기존 글 목록입니다. 이 중 지금 글과 주제가 연관된 것이 있으면
+본문 중 자연스러운 위치에 1~2개를 <a href="링크">앵커텍스트</a> 로 삽입하세요.
+앵커텍스트는 "여기"가 아니라 글 내용을 설명하는 문구로. 연관 글이 없으면 삽입하지 마세요.
+{links}
+"""
     prompt = f"""아래 조건으로 블로그 글을 작성하세요.
 오늘 날짜는 {today} 입니다. 제목/본문에 연도를 쓸 때는 반드시 이 날짜 기준의 연도를 사용하고, 지난 연도 정보는 최신 기준으로 서술하세요.
+{internal_block}
 
 제목(참고): {title}
 핵심 키워드: {primary_keyword}
