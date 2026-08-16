@@ -6,6 +6,7 @@
 """
 from __future__ import annotations
 import re
+import datetime
 from dataclasses import dataclass, field, asdict
 
 from core import llm
@@ -50,7 +51,9 @@ def _plain_len(html: str) -> int:
 def generate_article(title: str, primary_keyword: str, niche: str = "",
                      monetization: str = "adsense", min_chars: int = 1500) -> Article:
     """단일 아티클 생성."""
+    today = datetime.date.today()
     prompt = f"""아래 조건으로 블로그 글을 작성하세요.
+오늘 날짜는 {today} 입니다. 제목/본문에 연도를 쓸 때는 반드시 이 날짜 기준의 연도를 사용하고, 지난 연도 정보는 최신 기준으로 서술하세요.
 
 제목(참고): {title}
 핵심 키워드: {primary_keyword}

@@ -9,6 +9,7 @@
 """
 from __future__ import annotations
 import json
+import datetime
 from dataclasses import dataclass, asdict
 from typing import Optional
 
@@ -76,7 +77,9 @@ def generate_candidates(niche: str, keyword_data: Optional[list] = None,
     "monetization": "adsense | coupang | both",
     "est_score": 0~100 수익성 추정점수(숫자)
   }}
-]"""
+]
+
+오늘 날짜는 {datetime.date.today()} 입니다. 제목에 연도를 넣을 경우 반드시 이 날짜 기준의 연도를 사용하세요."""
 
     data = llm.ask_json(prompt, system=SELECT_SYSTEM)
     if isinstance(data, dict):
