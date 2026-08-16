@@ -90,8 +90,34 @@ def run_full_pipeline(posts_per_niche: int = 1, pick_niches: int = 3,
             try:
                 art = produce_one(cand)
                 print(f"   글자수 {art.word_count} · 태그 {len(art.tags)}개")
+                # 대표이미지(카드형 썸네일) 자동 생성
+                thumb = None
+                try:
+                    from core import images
+                    thumb = images.generate_thumbnail(
+                        art.title, niche=niche, slug=art.slug
+                    )
+                    if thumb:
+                        print(f"   🖼  썸네일 생성: {thumb.name}")
+                    # (선택) 본문 스톡사진 — 영문 슬러그를 검색어로 재활용
+                    photo = images.fetch_stock_photo(
+                        art.slug.replace("-", " "), slug=art.slug + "-photo"
+                    )
+                    if photo and "<h2" in art.html:
+                        # 첫 번째 h2 뒤에는 광고가 올 수 있으니 두 번째 h2 앞에 삽입
+                        parts = art.html.split("<h2", 2)
+                        if len(parts) >= 3:
+                            img_tag = (f'<figure><img src="PHOTO_PLACEHOLDER" '
+                                       f'alt="{art.primary_keyword}" loading="lazy"/></figure>')
+                            art.html = parts[0] + "<h2" + parts[1] + img_tag + "<h2" + parts[2]
+                            print(f"   📷 본문 사진 준비: {photo.name}")
+                except Exception as e:
+                    print(f"   [i] 이미지 생략({e})")
+                    photo = None
                 print(f"③ 발행 ({'DRY_RUN' if config.dry_run else status or config.publish_status})...")
-                pub = wordpress_publisher.publish_article(art, status=status)
+                pub = wordpress_publisher.publish_article(
+                    art, status=status, thumbnail=thumb, photo=photo
+                )
                 entry = {
                     "title": art.title,
                     "niche": niche,

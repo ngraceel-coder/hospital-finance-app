@@ -45,6 +45,7 @@ class Config:
     adsense_client_id: str = os.getenv("ADSENSE_CLIENT_ID", "")
     adsense_slot_id: str = os.getenv("ADSENSE_SLOT_ID", "")
     coupang_partners_tag: str = os.getenv("COUPANG_PARTNERS_TAG", "")
+    pexels_api_key: str = os.getenv("PEXELS_API_KEY", "")
 
     # 운영
     posts_per_day: int = _int("POSTS_PER_DAY", 3)
